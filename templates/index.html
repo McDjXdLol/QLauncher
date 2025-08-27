@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QLauncher</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
+        html,
+        body {
+            overflow: hidden;
+        }
+
+        :root {
+            --bg-dark: #0f172a;
+            --bg-light: #f1f5f9;
+            --text-dark: #e2e8f0;
+            --text-light: #1a202c;
+            --card-dark: #1e293b;
+            --card-light: #ffffff;
+            --border-dark: #475569;
+            --border-light: #cbd5e1;
+            --shadow-dark: rgba(255, 255, 255, 0.2);
+            --shadow-light: rgba(0, 0, 0, 0.2);
+            --accent: #3b82f6;
+            --weather-bg-dark: #3b82f6;
+            --weather-bg-light: #3b82f6;
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body.dark-theme {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        body.light-theme {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+        }
+
+        .card {
+            border: 2px solid;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 1rem;
+        }
+
+        body.dark-theme .card {
+            background-color: var(--card-dark);
+            border-color: var(--border-dark);
+            box-shadow: 0 4px 12px var(--shadow-dark);
+        }
+
+        body.light-theme .card {
+            background-color: var(--card-light);
+            border-color: var(--border-light);
+            box-shadow: 0 4px 12px var(--shadow-light);
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            background-color: #2563eb;
+        }
+
+        .weather-icon-background {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        body.dark-theme .weather-icon-background {
+            background: linear-gradient(135deg, var(--weather-bg-dark) 0%, var(--card-dark) 100%);
+        }
+
+        body.light-theme .weather-icon-background {
+            background: linear-gradient(135deg, var(--weather-bg-light) 0%, var(--card-light) 100%);
+        }
+
+        .horizontal-scroll-container {
+            position: relative;
+            display: flex;
+            gap: 1.25rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding: 1rem;
+        }
+
+        .horizontal-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .horizontal-scroll-container:hover {
+            cursor: grab;
+        }
+
+        .horizontal-scroll-container:active {
+            cursor: grabbing;
+        }
+
+        .app-card,
+        .link-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-width: 150px;
+            height: 120px;
+            padding: 1.5rem;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .app-card:hover,
+        .link-card:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        .anime-card,
+        .youtube-card {
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .anime-card {
+            width: 150px;
+            height: 220px;
+        }
+
+        .youtube-card {
+            width: 280px;
+            height: 160px;
+        }
+
+        .anime-card:hover,
+        .youtube-card:hover {
+            transform: scale(1.03);
+        }
+
+        .anime-card-img,
+        .youtube-card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.3s ease;
+        }
+
+        .anime-card-overlay,
+        .youtube-card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgb(0, 0, 0), rgba(0, 0, 0, 0.1));
+            padding: 1rem;
+            color: white;
+            pointer-events: none;
+        }
+
+        .anime-card-title,
+        .card-title,
+        .youtube-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .anime-card-status,
+        .youtube-card-details {
+            font-size: 0.8rem;
+            color: #d1d5db;
+        }
+
+        .youtube-card .duration-badge {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: white;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        /* Status colors */
+        .status-live {
+            border-color: #10b981;
+        }
+
+        .status-pending {
+            border-color: #f59e0b;
+        }
+
+        /* New elements styling */
+        .social-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .social-card:hover {
+            transform: scale(1.1);
+        }
+
+        .box-container {
+            border-radius: 1rem;
+            border: 2px solid;
+            padding: 1rem;
+            height: 100%;
+        }
+
+        body.dark-theme .box-container {
+            border-color: var(--border-dark);
+        }
+
+        body.light-theme .box-container {
+            border-color: var(--border-light);
+        }
+    </style>
+</head>
+
+<body class="dark-theme">
+    <div class="container mx-auto p-4 md:p-8">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+            <img src="{{ url_for('static', filename='favicon.ico') }}" alt="favicon" width="64" height="64" />
+            <h1 id="app-name" class="text-3xl md:text-4xl font-extrabold text-center md:text-left">
+                QLauncher
+            </h1>
+
+            <div class="flex-grow md:max-w-xl relative mx-auto w-full md:w-auto">
+                <input id="google-search-input" type="text" placeholder="Search Google..."
+                    class="w-full pl-12 pr-12 py-3 rounded-full text-gray-900 bg-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500 transition-all duration-300" />
+                <img src="https://www.google.com/favicon.ico" alt="Google Icon"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6" />
+                <button id="google-search-btn"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-500 transition-colors duration-200">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center space-x-4 flex-shrink-0">
+                <button id="reload-btn"
+                    class="p-4 rounded-full card focus:outline-none hover:rotate-180 transition-transform duration-500">
+                    <i class="fas fa-sync-alt text-lg"></i>
+                </button>
+                <button id="theme-toggle"
+                    class="p-4 rounded-full card focus:outline-none hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-moon text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6">
+            <div id="weather-container" class="col-span-full card p-6 flex flex-col items-center">
+                <div id="loading-weather" class="text-center text-gray-400 text-sm">
+                    Loading weather data...
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="box-container flex flex-col w-full">
+                <h2 class="text-xl flex items-center justify-center font-bold mb-4">Quick Links</h2>
+                <!-- Usunięto wyrównanie poziome, pozostawiono wyrównanie pionowe -->
+                <div id="links-container" class="horizontal-scroll-container flex items-center flex-grow">
+                    <div id="loading-links" class="col-span-full text-center text-gray-400 text-sm">
+                        Loading links...
+                    </div>
+                </div>
+            </div>
+
+            <div class="box-container flex flex-col w-full">
+                <h2 class="text-xl flex items-center justify-center font-bold mb-4">Applications</h2>
+                <!-- Usunięto wyrównanie poziome, pozostawiono wyrównanie pionowe -->
+                <div id="apps-container" class="horizontal-scroll-container flex items-center flex-grow">
+                    <div id="loading-apps" class="col-span-full text-center text-gray-400 text-sm">
+                        Loading applications...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="box-container flex flex-col w-full">
+                <!-- Wyrównanie pionowe i poziome dla reszty kontenerów -->
+                <div id="youtube-container"
+                    class="horizontal-scroll-container flex items-center justify-center flex-grow">
+                    <div id="loading-youtube" class="col-span-full text-center text-gray-400 text-sm">
+                        Loading YouTube videos...
+                    </div>
+                </div>
+            </div>
+
+            <div class="box-container flex flex-col w-full">
+                <!-- Wyrównanie pionowe i poziome dla reszty kontenerów -->
+                <div id="anime-container"
+                    class="horizontal-scroll-container flex items-center justify-center flex-grow">
+                    <div id="loading-anime" class="col-span-full text-center text-gray-400 text-sm">
+                        Loading anime...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-1 gap-2 mb-3">
+            <div class="box-container flex flex-col w-full">
+                <h2 class="text-xl flex items-center justify-center font-bold mb-2">My Socials</h2>
+                <!-- Wyrównanie pionowe i poziome dla reszty kontenerów -->
+                <div id="socials-container"
+                    class="horizontal-scroll-container flex items-center justify-center flex-grow">
+                    <div id="loading-socials" class="col-span-full text-center text-gray-400 text-sm">
+                        Loading socials...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const appNameElement = document.getElementById("app-name");
+            const appsContainer = document.getElementById("apps-container");
+            const linksContainer = document.getElementById("links-container");
+            const animeContainer = document.getElementById("anime-container");
+            const youtubeContainer = document.getElementById("youtube-container");
+            const weatherContainer = document.getElementById("weather-container");
+            const socialsContainer = document.getElementById("socials-container");
+            const reloadBtn = document.getElementById("reload-btn");
+            const themeToggleBtn = document.getElementById("theme-toggle");
+            const body = document.body;
+            const searchInput = document.getElementById("google-search-input");
+            const searchBtn = document.getElementById("google-search-btn");
+
+            const fetchData = async () => {
+                try {
+                    const [
+                        settingsResponse,
+                        appsResponse,
+                        linksResponse,
+                        animeResponse,
+                        youtubeResponse,
+                        weatherResponse,
+                        socialsResponse,
+                    ] = await Promise.all([
+                        fetch("/api/settings"),
+                        fetch("/api/apps"),
+                        fetch("/api/links"),
+                        fetch("/api/anime"),
+                        fetch("/api/youtube"),
+                        fetch("/api/weather"),
+                        fetch("/api/socials")
+                    ]);
+
+                    const settingsData = await settingsResponse.json();
+                    const appsData = await appsResponse.json();
+                    const linksData = await linksResponse.json();
+                    const animeData = await animeResponse.json();
+                    const youtubeData = await youtubeResponse.json();
+                    const weatherData = await weatherResponse.json();
+                    const socialsData = await socialsResponse.json();
+
+                    document.title = settingsData.AppName || "QLauncher";
+                    appNameElement.textContent = settingsData.AppName || "QLauncher";
+
+                    const initialTheme = (settingsData.Theme || "dark").toLowerCase();
+                    body.className = `${initialTheme}-theme`;
+                    themeToggleBtn.innerHTML = initialTheme === "dark" ? '<i class="fas fa-moon text-lg"></i>' : '<i class="fas fa-sun text-lg"></i>';
+
+                    renderWeather(weatherData, weatherContainer);
+                    renderApps(appsData, appsContainer);
+                    renderLinks(linksData, linksContainer);
+                    renderAnime(animeData, animeContainer);
+                    renderYoutube(youtubeData, youtubeContainer);
+                    renderSocials(socialsData, socialsContainer);
+
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                    appsContainer.innerHTML = `<div class="col-span-full text-center text-red-500">Failed to load applications. Please check the server.</div>`;
+                    linksContainer.innerHTML = `<div class="col-span-full text-center text-red-500">Failed to load links. Please check the server.</div>`;
+                    animeContainer.innerHTML = `<div class="col-span-full text-center text-red-500">Failed to load anime. Please check the server.</div>`;
+                    youtubeContainer.innerHTML = `<div class="col-span-full text-center text-red-500">Failed to load YouTube videos. Please check the server.</div>`;
+                    weatherContainer.innerHTML = `<div class="col-span-full text-center text-red-500">Failed to load weather data. Please check the server.</div>`;
+                    socialsContainer.innerHTML = `<div class="col-span-full text-center text-red-500">Failed to load socials. Please check the server.</div>`;
+                }
+            };
+
+            const renderWeather = (data, container) => {
+                container.innerHTML = "";
+                // The container itself is the card, so we just append elements directly to it.
+                // The container already has classes: "col-span-full card p-6 flex flex-col items-center"
+                // Now we will add the rest of the layout classes here for the content.
+                container.classList.add("w-full", "flex-row", "md:flex-row", "justify-between", "gap-6");
+                container.classList.remove("flex-col"); // Remove the old flex-col class
+
+                const mainInfo = document.createElement("div");
+                mainInfo.className = "flex items-center gap-4 flex-grow";
+
+                const iconBackground = document.createElement("div");
+                iconBackground.className = "weather-icon-background flex-shrink-0";
+
+                const iconCode = data.weather[0].icon;
+                const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@4x.png`;
+                const iconElement = document.createElement("img");
+                iconElement.src = iconUrl;
+                iconElement.alt = "Weather Icon";
+                iconElement.className = `weather-icon`;
+
+                iconBackground.appendChild(iconElement);
+
+                const details = document.createElement("div");
+                details.className = "flex flex-col flex-grow";
+
+                details.innerHTML = `
+                    <h3 class="text-3xl font-bold">${data.name}</h3>
+                    <p class="text-2xl font-medium">${data.main.temp.toFixed(1)}°C</p>
+                    <p class="text-sm">Feels like: ${data.main.feels_like.toFixed(1)}°C</p>
+                    <p class="text-md capitalize">${data.weather[0].description}</p>
+                `;
+
+                const moreDetails = document.createElement("div");
+                moreDetails.className = "text-sm text-gray-400 text-right md:w-1/3";
+                moreDetails.innerHTML = `
+                    <p>Humidity: ${data.main.humidity}%</p>
+                    <p>Pressure: ${data.main.pressure} hPa</p>
+                    <p>Wind: ${data.wind.speed.toFixed(1)} m/s</p>
+                `;
+
+                mainInfo.appendChild(iconBackground);
+                mainInfo.appendChild(details);
+
+                container.appendChild(mainInfo);
+                container.appendChild(moreDetails);
+            };
+
+            const renderApps = (appsData, container) => {
+                container.innerHTML = "";
+                for (const [name, url] of Object.entries(appsData)) {
+                    const card = document.createElement("div");
+                    card.className = "card app-card cursor-pointer";
+
+                    const icon = document.createElement("i");
+                    icon.className = "fa-solid fa-rocket text-3xl mb-2";
+
+                    const title = document.createElement("h3");
+                    title.className = "card-title text-md font-semibold truncate";
+                    title.textContent = name;
+
+                    card.appendChild(icon);
+                    card.appendChild(title);
+                    card.onclick = () => launchApp(name);
+
+                    container.appendChild(card);
+                }
+            };
+
+            const renderLinks = (linksData, container) => {
+                container.innerHTML = "";
+                for (const [name, url] of Object.entries(linksData)) {
+                    const card = document.createElement("a");
+                    card.href = url.startsWith("http") ? url : `http://${url}`;
+                    card.target = "_blank";
+                    card.rel = "noopener noreferrer";
+                    card.className = "card link-card";
+
+                    let iconClass = 'fas fa-link';
+                    if (name.toLowerCase().includes("google")) iconClass = 'fab fa-google';
+                    else if (name.toLowerCase().includes("github")) iconClass = 'fab fa-github';
+                    else if (name.toLowerCase().includes("wiki")) iconClass = 'fab fa-wikipedia-w';
+                    else if (name.toLowerCase().includes("stack")) iconClass = 'fab fa-stack-overflow';
+                    else if (name.toLowerCase().includes("chatgpt")) iconClass = 'fas fa-robot';
+                    else if (name.toLowerCase().includes("midjourney")) iconClass = 'fas fa-magic';
+                    else if (name.toLowerCase().includes("youtube")) iconClass = 'fab fa-youtube';
+                    else if (name.toLowerCase().includes("reddit")) iconClass = 'fa-brands fa-reddit-alien';
+
+                    const icon = document.createElement("i");
+                    icon.className = `${iconClass} text-3xl mb-2`;
+
+                    const title = document.createElement("h3");
+                    title.className = "card-title text-md font-semibold truncate";
+                    title.textContent = name;
+
+                    card.appendChild(icon);
+                    card.appendChild(title);
+                    container.appendChild(card);
+                }
+            };
+
+            const renderAnime = (animeData, container) => {
+                container.innerHTML = "";
+                for (const animeInfo of animeData) {
+                    const card = document.createElement("a");
+                    card.href = animeInfo.url;
+                    card.target = "_blank";
+                    card.rel = "noopener noreferrer";
+
+                    let cardStatusClass = "status-pending";
+                    if (animeInfo.status.toLowerCase().includes("episode") || animeInfo.status.toLowerCase().includes("released")) {
+                        cardStatusClass = "status-live";
+                    } else {
+                        cardStatusClass = "status-pending";
+                    }
+
+                    card.className = `anime-card rounded-xl overflow-hidden shadow-lg transition-transform duration-300 ${cardStatusClass}`;
+
+                    const img = document.createElement("img");
+                    img.className = "anime-card-img";
+                    img.src = animeInfo.img;
+                    img.alt = animeInfo.title;
+                    img.onerror = () => {
+                        img.src = `https://placehold.co/150x220/1a202c/e2e8f0?text=No+image`;
+                    };
+
+                    const overlay = document.createElement("div");
+                    overlay.className = "anime-card-overlay";
+
+                    const title = document.createElement("h3");
+                    title.className = "anime-card-title";
+                    title.textContent = animeInfo.title;
+
+                    const status = document.createElement("p");
+                    status.className = "anime-card-status";
+                    status.textContent = animeInfo.status;
+
+                    overlay.appendChild(title);
+                    overlay.appendChild(status);
+                    card.appendChild(img);
+                    card.appendChild(overlay);
+
+                    container.appendChild(card);
+                }
+            };
+
+            const renderYoutube = (youtubeData, container) => {
+                container.innerHTML = "";
+                for (const videoInfo of Object.values(youtubeData)) {
+                    const card = document.createElement("a");
+                    card.href = videoInfo.link;
+                    card.target = "_blank";
+                    card.rel = "noopener noreferrer";
+                    card.className = "youtube-card rounded-xl overflow-hidden shadow-lg transition-transform duration-300";
+
+                    const img = document.createElement("img");
+                    img.className = "youtube-card-img";
+                    img.src = videoInfo.thumbnail || `https://placehold.co/280x160/334155/f1f5f9?text=No+thumbnail`;
+                    img.alt = videoInfo.title;
+
+                    const overlay = document.createElement("div");
+                    overlay.className = "youtube-card-overlay flex flex-col justify-end";
+
+                    const title = document.createElement("h3");
+                    title.className = "youtube-card-title";
+                    title.textContent = videoInfo.title;
+
+                    const detailsContainer = document.createElement("div");
+                    detailsContainer.className = "youtube-card-details flex items-center gap-2 mt-1";
+
+                    if (videoInfo.channel_avatar) {
+                        const avatar = document.createElement("img");
+                        avatar.src = videoInfo.channel_avatar;
+                        avatar.alt = "Channel Avatar";
+                        avatar.className = "w-6 h-6 rounded-full flex-shrink-0";
+                        detailsContainer.appendChild(avatar);
+                    }
+
+                    const channel = document.createElement("p");
+                    channel.className = "truncate flex-grow";
+                    channel.textContent = videoInfo.channel_name || "Unknown channel";
+
+                    const views = document.createElement("p");
+                    views.className = "text-xs text-gray-400 flex-shrink-0";
+                    if (videoInfo.views) {
+                        const formattedViews = parseInt(videoInfo.views).toLocaleString('en-US');
+                        views.textContent = `${formattedViews} views`;
+                    }
+
+                    detailsContainer.appendChild(channel);
+                    detailsContainer.appendChild(views);
+                    overlay.appendChild(title);
+                    overlay.appendChild(detailsContainer);
+
+                    const durationBadge = document.createElement("span");
+                    durationBadge.className = "duration-badge mb-10";
+                    durationBadge.textContent = videoInfo.duration || "N/A";
+
+                    card.appendChild(img);
+                    card.appendChild(overlay);
+                    card.appendChild(durationBadge);
+
+                    container.appendChild(card);
+                }
+            };
+
+            const renderSocials = (socialsData, container) => {
+                container.innerHTML = "";
+                for (const [platform, data] of Object.entries(socialsData)) {
+                    const card = document.createElement("a");
+                    card.href = "https://www." + data;
+                    card.target = "_blank";
+                    card.rel = "noopener noreferrer";
+                    card.className = "social-card card";
+
+                    let iconClass;
+                    switch (platform.toLowerCase()) {
+                        case 'twitter':
+                            iconClass = 'fab fa-twitter';
+                            card.classList.add('hover:text-[#1DA1F2]');
+                            break;
+                        case 'github':
+                            iconClass = 'fab fa-github';
+                            card.classList.add('hover:text-[#501DAF]');
+                            break;
+                        case 'linkedin':
+                            iconClass = 'fab fa-linkedin';
+                            card.classList.add('hover:text-[#0077B5]');
+                            break;
+                        case 'instagram':
+                            iconClass = 'fab fa-instagram';
+                            card.classList.add('hover:text-[#E4405F]');
+                            break;
+                        case 'discord':
+                            iconClass = 'fab fa-discord';
+                            card.classList.add('hover:text-[#5865F2]');
+                            break;
+                        case 'facebook':
+                            iconClass = 'fab fa-facebook';
+                            card.classList.add('hover:text-[#4267B2]');
+                            break;
+                        case 'reddit':
+                            iconClass = 'fa-brands fa-reddit-alien';
+                            card.classList.add('hover:text-[#FF5700]')
+                            break;
+                        default:
+                            iconClass = 'fas fa-globe';
+                    }
+
+                    const icon = document.createElement("i");
+                    icon.className = `${iconClass} text-2xl`;
+                    card.appendChild(icon);
+                    container.appendChild(card);
+                }
+            };
+
+            const launchApp = async (appName) => {
+                try {
+                    await fetch(`/run/${appName}`, { method: "POST" });
+                } catch (error) {
+                    console.error("Error launching app:", error);
+                }
+            };
+
+            const reloadData = async () => {
+                reloadBtn.disabled = true;
+                reloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin text-lg"></i>';
+                try {
+                    // Send POST request to backend to trigger reload
+                    await fetch("/reload_settings", { method: "POST" });
+                    // Then fetch and render the new data
+                    await fetchData();
+                } catch (error) {
+                    console.error("Error reloading data:", error);
+                } finally {
+                    reloadBtn.disabled = false;
+                    reloadBtn.innerHTML = '<i class="fas fa-sync-alt text-lg"></i>';
+                }
+            };
+
+            reloadBtn.addEventListener("click", reloadData);
+
+            themeToggleBtn.addEventListener("click", () => {
+                const isDark = body.classList.contains("dark-theme");
+                if (isDark) {
+                    body.classList.replace("dark-theme", "light-theme");
+                    themeToggleBtn.innerHTML = '<i class="fas fa-sun text-lg"></i>';
+                } else {
+                    body.classList.replace("light-theme", "dark-theme");
+                    themeToggleBtn.innerHTML = '<i class="fas fa-moon text-lg"></i>';
+                }
+            });
+
+            const performGoogleSearch = () => {
+                const query = searchInput.value.trim();
+                if (query) {
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, "_blank");
+                }
+            };
+
+            searchBtn.addEventListener("click", performGoogleSearch);
+
+            searchInput.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
+                    performGoogleSearch();
+                }
+            });
+
+            const horizontalContainers = document.querySelectorAll('.horizontal-scroll-container');
+            horizontalContainers.forEach(container => {
+                let isDown = false;
+                let startX;
+                let scrollLeft;
+
+                container.addEventListener('mousedown', (e) => {
+                    isDown = true;
+                    container.classList.add('active');
+                    startX = e.pageX - container.offsetLeft;
+                    scrollLeft = container.scrollLeft;
+                });
+                container.addEventListener('mouseleave', () => {
+                    isDown = false;
+                    container.classList.remove('active');
+                });
+                container.addEventListener('mouseup', () => {
+                    isDown = false;
+                    container.classList.remove('active');
+                });
+                container.addEventListener('mousemove', (e) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - container.offsetLeft;
+                    const walk = (x - startX) * 2; // Increased sensitivity
+                    container.scrollLeft = scrollLeft - walk;
+                });
+
+                // Mouse wheel for horizontal scroll
+                container.addEventListener('wheel', (event) => {
+                    event.preventDefault();
+                    container.scrollLeft += event.deltaY;
+                });
+            });
+
+            fetchData();
+        });
+    </script>
+</body>
+
+</html>
