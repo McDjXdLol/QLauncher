@@ -2,8 +2,13 @@
 
 QLauncher is a simple, customizable home page for your browser. It provides quick access to your favorite applications, links, and social media, along with real-time weather information and the latest YouTube videos from a configured channel (WIP).
 
+## Screenshots
+| Dark Theme | Light Theme|
+|------------|------------|
+|<img width="1280" height="890" alt="Zrzut ekranu 2025-08-27 141951" src="https://github.com/user-attachments/assets/d32b58ec-2aa2-43b0-8e48-2ca05b8f04e8" />| <img width="1280" height="890" alt="Zrzut ekranu 2025-08-27 142100" src="https://github.com/user-attachments/assets/b449fec7-909c-479f-b0b4-e4defd50e2b9" />|
+
 ## Roadmap
-- [ ] Add **screenshots**.
+- [x] Add **screenshots**.
 - [ ] Add a **scraper** to download data from YouTube.
 - [ ] Implement a **scraper** for various anime websites.
 - [ ] Add support for **easily integrating new anime sites**.
