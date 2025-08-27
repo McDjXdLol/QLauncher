@@ -294,7 +294,6 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div class="box-container flex flex-col w-full">
                 <h2 class="text-xl flex items-center justify-center font-bold mb-4">Quick Links</h2>
-                <!-- Usunięto wyrównanie poziome, pozostawiono wyrównanie pionowe -->
                 <div id="links-container" class="horizontal-scroll-container flex items-center flex-grow">
                     <div id="loading-links" class="col-span-full text-center text-gray-400 text-sm">
                         Loading links...
@@ -304,7 +303,6 @@
 
             <div class="box-container flex flex-col w-full">
                 <h2 class="text-xl flex items-center justify-center font-bold mb-4">Applications</h2>
-                <!-- Usunięto wyrównanie poziome, pozostawiono wyrównanie pionowe -->
                 <div id="apps-container" class="horizontal-scroll-container flex items-center flex-grow">
                     <div id="loading-apps" class="col-span-full text-center text-gray-400 text-sm">
                         Loading applications...
@@ -315,7 +313,6 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div class="box-container flex flex-col w-full">
-                <!-- Wyrównanie pionowe i poziome dla reszty kontenerów -->
                 <div id="youtube-container"
                     class="horizontal-scroll-container flex items-center justify-center flex-grow">
                     <div id="loading-youtube" class="col-span-full text-center text-gray-400 text-sm">
@@ -325,7 +322,6 @@
             </div>
 
             <div class="box-container flex flex-col w-full">
-                <!-- Wyrównanie pionowe i poziome dla reszty kontenerów -->
                 <div id="anime-container"
                     class="horizontal-scroll-container flex items-center justify-center flex-grow">
                     <div id="loading-anime" class="col-span-full text-center text-gray-400 text-sm">
@@ -338,7 +334,6 @@
         <div class="grid grid-cols-1 md:grid-cols-1 gap-2 mb-3">
             <div class="box-container flex flex-col w-full">
                 <h2 class="text-xl flex items-center justify-center font-bold mb-2">My Socials</h2>
-                <!-- Wyrównanie pionowe i poziome dla reszty kontenerów -->
                 <div id="socials-container"
                     class="horizontal-scroll-container flex items-center justify-center flex-grow">
                     <div id="loading-socials" class="col-span-full text-center text-gray-400 text-sm">
@@ -419,11 +414,8 @@
 
             const renderWeather = (data, container) => {
                 container.innerHTML = "";
-                // The container itself is the card, so we just append elements directly to it.
-                // The container already has classes: "col-span-full card p-6 flex flex-col items-center"
-                // Now we will add the rest of the layout classes here for the content.
                 container.classList.add("w-full", "flex-row", "md:flex-row", "justify-between", "gap-6");
-                container.classList.remove("flex-col"); // Remove the old flex-col class
+                container.classList.remove("flex-col");
 
                 const mainInfo = document.createElement("div");
                 mainInfo.className = "flex items-center gap-4 flex-grow";
@@ -749,7 +741,7 @@
                     if (!isDown) return;
                     e.preventDefault();
                     const x = e.pageX - container.offsetLeft;
-                    const walk = (x - startX) * 2; // Increased sensitivity
+                    const walk = (x - startX) * 2;
                     container.scrollLeft = scrollLeft - walk;
                 });
 
